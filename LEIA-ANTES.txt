@@ -1,0 +1,83 @@
+OUVIR JUNTOS — VERSÃO COM PLAYLIST POR LINK E MP3 PRÓPRIO
+
+COMO USAR
+1. Abra o site e clique em "Criar sala". Copie o convite e mande para seus amigos.
+2. Em "Monte a playlist da sala", cole o link de uma playlist PÚBLICA do
+   Spotify, do Deezer ou do Audius e clique em Importar.
+   - O site lê os nomes das músicas e procura, para cada uma, uma versão
+     gratuita e sem anúncios no Audius.
+   - Cada faixa mostra de onde vai tocar: "Sem anúncios · Audius", "mp3 pronto"
+     ou "YouTube · pode ter anúncios".
+3. Para as faixas que não foram encontradas, use os botões da própria faixa:
+   - "Sem anúncios": procura de novo no Audius e deixa você escolher a versão.
+   - "Meu mp3": envie um arquivo seu para aquela faixa.
+   - "YouTube": usa um vídeo do YouTube (pode ter anúncios).
+4. Para tocar uma pasta de músicas: clique em "Adicionar pasta" e escolha a
+   pasta. Todos os arquivos de áudio dela entram na lista, em ordem de nome
+   (01, 02, 03...), e o nome e o artista vêm de dentro do próprio arquivo.
+   "Adicionar arquivos" faz o mesmo com arquivos soltos. No celular, a seleção
+   de pasta pode não estar disponível; use "Adicionar arquivos".
+5. Clique em "Tocar tudo" para ouvir a lista inteira, ou em "Tocar" na faixa
+   que quiser. O anfitrião também tem "Anterior", "Próxima" e "Aleatório":
+   com o aleatório ligado, a próxima música é sorteada e nenhuma se repete até
+   a lista acabar.
+6. Seus amigos entram pelo convite e precisam apertar "Ativar meu player" uma vez
+   (os navegadores exigem esse toque para liberar o áudio).
+
+IMPORTANTE — O QUE ESPERAR
+- O Audius é um serviço gratuito de música independente. Músicas comerciais
+  (as que estão no Spotify) quase nunca estão lá. Para elas, use seu próprio mp3.
+- Como o mp3 chega aos amigos (versão 4): o anfitrião envia os pedaços do arquivo
+  pelo servidor de mensagens da sala (porta 443, a mesma que já faz a sala funcionar,
+  sem P2P, sem TURN). Cada pessoa guarda a faixa atual e as próximas 2 na MEMÓRIA (RAM)
+  do próprio aparelho, sem baixar nada para o disco: a música começa sozinha quando
+  chega e, como as próximas já vêm adiantadas, a troca de faixa é instantânea.
+  Tudo some ao sair da sala. Faixas antigas são descartadas da memória.
+- Quem entra com a música já tocando recebe a faixa e entra no ponto certo.
+- Se algum pedaço se perder, o aparelho pede só os que faltam (reenvio automático).
+- O anfitrião precisa manter a página aberta enquanto houver mp3 para enviar.
+- Velocidade: por padrão o anfitrião envia a ~900 KB/s (config.js > FILE_RATE_KBPS).
+  Um mp3 de 5 MB leva alguns segundos para chegar na primeira vez.
+- Limite: 60 MB por arquivo e 300 faixas por lista.
+- Só o anfitrião adiciona músicas e controla a playlist.
+- A leitura do Spotify usa a página pública de "embed" do Spotify, que não é uma
+  API oficial: ela só traz playlists públicas, pode trazer apenas parte das faixas de listas muito grandes e pode mudar sem aviso.
+  Se parar de funcionar, use "Prefere colar os nomes das músicas?".
+
+PUBLICAÇÃO NO NETLIFY
+A leitura de playlists do Spotify/Deezer roda numa Netlify Function
+(netlify/functions/playlist.js). Para ela funcionar, publique a pasta INTEIRA
+(com a pasta "netlify" e o arquivo netlify.toml). Depois do deploy, confira no
+painel do Netlify, em "Functions", se aparece a função "playlist". Se não
+aparecer, faça o deploy pelo Git ou pelo Netlify CLI (comando: netlify deploy --prod).
+Sem a função, tudo continua funcionando, menos a leitura de links do Spotify e
+do Deezer (links do Audius, mp3 e lista colada não dependem dela).
+
+ARQUIVOS PRINCIPAIS
+- index.html / style.css: interface.
+- app.js: salas, playlist, fontes de áudio, envio de mp3 e sincronização.
+- mqtt-lite.js: cliente de mensagens (salas e envio dos mp3).
+- lib.js: funções de leitura de links, busca de versões e leitura de etiquetas ID3.
+- netlify/functions/playlist.js: lê as playlists públicas do Spotify e do Deezer.
+- config.js: chave opcional do YouTube (não é necessária).
+- privacidade.html: informações de privacidade.
+
+
+COMO AS SALAS FUNCIONAM (versão 4)
+- Entrar na sala e sincronizar (playlist, play/pause, posição) usa um servidor público de
+  mensagens MQTT por WSS (porta 443, a mesma do HTTPS). Não depende de conexão direta entre
+  os aparelhos, então entra em praticamente qualquer rede. O código da sala (UJ-XXXXXXXX) já
+  indica qual servidor usar; a primeira letra depois de "UJ-" escolhe o servidor.
+- O anfitrião precisa manter a página aberta. Se ele recarregar e clicar em "Criar sala", o
+  código é o mesmo por até 6 horas e os convidados voltam sozinhos.
+- Convidado entra colando o link, o código ou a mensagem inteira do WhatsApp.
+- Os mp3 também passam pelo servidor de mensagens (ver acima), então não dependem de
+  conexão direta entre os aparelhos. Músicas do Audius/YouTube tocam localmente em cada
+  aparelho.
+- Servidores de mensagens: config.js > MQTT_BROKERS (padrão: EMQX, HiveMQ e Mosquitto públicos).
+  São serviços de terceiros, gratuitos e sem garantia de disponibilidade.
+- Se o mp3 não chegar para alguém: o servidor público pode estar lento ou limitando mensagens; diminua FILE_RATE_KBPS no config.js ou use um servidor MQTT seu (aceitando mensagens de 64 KB).
+- Se aparecer "não consegui falar com o servidor de mensagens": a rede, uma extensão ou o
+  antivírus pode estar bloqueando WSS; teste outra rede/navegador.
+- Convites antigos (versões anteriores) não funcionam; crie uma sala nova.
+- Convites de versões 3 funcionam, mas todos precisam recarregar a página. Depois de publicar, recarregue com Ctrl+Shift+R nos dois aparelhos.

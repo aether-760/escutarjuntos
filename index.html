@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#11101a">
+  <meta name="description" content="Crie uma sala, convide seus amigos e ouçam juntos à distância.">
+  <title>Ouvir Juntos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=11">
+  <script src="config.js?v=7"></script>
+  <script src="lib.js?v=2"></script>
+  <script src="mqtt-lite.js?v=2"></script>
+  <script src="app.js?v=18" defer></script>
+</head>
+<body>
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+
+  <main class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Ouvir Juntos - início">
+        <span class="brand-mark">♫</span>
+        <span>ouvir<span class="brand-light">juntos</span></span>
+      </a>
+      <div class="connection-status" id="connectionStatus" aria-live="polite">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">Você está offline de uma sala</span>
+      </div>
+    </header>
+
+    <section class="intro">
+      <div class="eyebrow"><span class="eyebrow-line"></span> MÚSICA EM BOA COMPANHIA</div>
+      <h1>O play fica melhor<br><span>quando é junto.</span></h1>
+      <p>Crie uma sala, compartilhe o link ou o código e curta a mesma música com seus amigos, mesmo cada um estando em um lugar.</p>
+    </section>
+
+    <section class="panel room-panel" aria-labelledby="roomHeading">
+      <div class="panel-heading">
+        <div>
+          <div class="section-kicker">01 / SUA COMPANHIA</div>
+          <h2 id="roomHeading">Entre em uma sala</h2>
+        </div>
+        <span class="heading-icon" aria-hidden="true">⌁</span>
+      </div>
+
+      <div class="room-actions" id="roomActions">
+        <button class="button button-primary" id="createRoomButton" type="button"><span aria-hidden="true">＋</span> Criar sala</button>
+        <div class="join-row">
+          <label class="sr-only" for="roomCodeInput">Código da sala</label>
+          <input id="roomCodeInput" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="Cole o código ou o link do convite">
+          <button class="button button-secondary" id="joinRoomButton" type="button">Entrar</button>
+        </div>
+      </div>
+
+      <div class="room-live" id="roomLive" hidden>
+        <div class="room-live-top">
+          <div class="room-live-label"><span class="live-pulse"></span><span id="roomRole">Sala ativa</span></div>
+          <button class="text-button" id="leaveRoomButton" type="button">Sair da sala</button>
+        </div>
+        <div class="invite-row">
+          <div class="invite-code-wrap"><span class="micro-label">CÓDIGO DA SALA</span><strong id="roomCodeDisplay">—</strong></div>
+          <div class="invite-actions">
+            <button class="button button-secondary copy-button" id="copyRoomCodeButton" type="button">Copiar código</button>
+            <button class="button button-primary copy-button" id="copyInviteButton" type="button">Copiar convite</button>
+          </div>
+        </div>
+        <p class="room-hint" id="roomHint">Envie o link ou o código. Mantenha esta página aberta para seus amigos conseguirem entrar.</p>
+        <div class="members-line"><span class="members-icon">◉</span><span id="memberCount">1 pessoa na sala</span></div>
+      </div>
+      <p class="panel-footnote" id="roomFootnote">Você pode criar uma sala ou entrar com o código ou link que alguém compartilhou.</p>
+    </section>
+
+    <section class="panel music-panel" aria-labelledby="musicHeading">
+      <div class="panel-heading">
+        <div>
+          <div class="section-kicker">02 / O SOM</div>
+          <h2 id="musicHeading">Monte a playlist da sala</h2>
+        </div>
+        <span class="heading-icon music-heading-icon" aria-hidden="true">♫</span>
+      </div>
+
+      <form class="spotify-form" id="playlistForm">
+        <label class="sr-only" for="spotifyUrlInput">Link de uma playlist</label>
+        <input id="spotifyUrlInput" type="text" inputmode="url" placeholder="Cole o link de uma playlist (Spotify, Deezer ou Audius)" autocomplete="url" spellcheck="false">
+        <button class="button button-primary" id="loadPlaylistButton" type="submit">Importar <span aria-hidden="true">↗</span></button>
+      </form>
+      <p class="input-help" id="spotifyHelp">O site lê os nomes das músicas da playlist pública e procura, em cada uma, uma versão que toque sem anúncios. O que não for encontrado você completa enviando o seu próprio mp3.</p>
+
+      <div class="add-files-row">
+        <div class="add-files-buttons">
+          <button class="button button-secondary" id="addFolderButton" type="button"><span aria-hidden="true">▤</span> Adicionar pasta</button>
+          <button class="button button-secondary" id="addFilesButton" type="button"><span aria-hidden="true">＋</span> Adicionar arquivos</button>
+        </div>
+        <input id="addFolderInput" type="file" webkitdirectory multiple hidden>
+        <input id="addFilesInput" type="file" accept="audio/*,.mp3,.m4a,.ogg,.wav,.flac" multiple hidden>
+        <input id="trackFileInput" type="file" accept="audio/*,.mp3,.m4a,.ogg,.wav,.flac" hidden>
+        <p class="input-help" id="filesHelp">Escolha uma pasta e todas as músicas dela entram na lista. Os mp3 saem do seu aparelho para a sala: cada amigo recebe a faixa atual e as próximas direto na memória do aparelho dele, e tudo some ao sair; nada é guardado em servidor nem baixado. Cada arquivo pode ter até 60 MB. No celular, “Adicionar pasta” pode abrir só a seleção de arquivos.</p>
+      </div>
+
+      <details class="manual-import" id="manualImportDetails">
+        <summary>Prefere colar os nomes das músicas?</summary>
+        <p>Use uma música por linha, neste formato: <strong>Nome da música - Artista</strong>.</p>
+        <label class="sr-only" for="manualTrackList">Lista de músicas</label>
+        <textarea id="manualTrackList" rows="5" placeholder="Exemplo:&#10;Música 1 - Artista 1&#10;Música 2 - Artista 2"></textarea>
+        <button class="button button-secondary" id="importManualButton" type="button">Importar músicas coladas</button>
+      </details>
+
+      <div class="player-area" id="playerArea">
+        <div class="player-empty" id="playerEmpty">
+          <div class="empty-art" aria-hidden="true"><span>♫</span><i></i><b></b></div>
+          <strong>Sua próxima música começa aqui</strong>
+          <span>Importe uma playlist ou adicione mp3 para ouvir em grupo.</span>
+        </div>
+        <div class="player-wrap" id="playerWrap" hidden>
+          <div class="playlist-meta">
+            <div>
+              <span class="micro-label">PLAYLIST CARREGADA</span>
+              <strong id="playlistTitle">Minha playlist</strong>
+              <span id="playlistCount" class="playlist-count"></span>
+            </div>
+            <a id="spotifySourceLink" href="https://open.spotify.com/" target="_blank" rel="noopener noreferrer" hidden>Ver playlist original ↗</a>
+          </div>
+
+          <div class="now-playing-row">
+            <div>
+              <span class="micro-label">TOCANDO NA SALA</span>
+              <strong id="nowPlayingTitle">Escolha uma música</strong>
+              <span id="nowPlayingArtist" class="now-playing-artist"></span>
+            </div>
+            <span class="playing-equalizer paused" id="playingEqualizer" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          </div>
+          <div id="youtubeEmbed" class="youtube-embed" aria-label="Player do YouTube" hidden></div>
+          <div id="audioWrap" class="audio-wrap" hidden>
+            <audio id="audioPlayer" controls preload="auto" playsinline hidden></audio>
+            <audio id="fileAudio" controls preload="auto" playsinline hidden></audio>
+          </div>
+          <p class="player-tip" id="playerTip">Cada pessoa pode precisar apertar Play no próprio aparelho para liberar o áudio.</p>
+          <div class="sync-controls">
+            <button class="button button-secondary" id="playPauseButton" type="button" disabled>▶ Ativar meu player</button>
+            <button class="button button-quiet" id="syncButton" type="button" disabled>Sincronizar</button>
+          </div>
+          <div class="sync-controls host-controls" id="hostControls">
+            <button class="button button-primary" id="playAllButton" type="button">▶ Tocar tudo</button>
+            <button class="button button-quiet" id="prevButton" type="button">⏮ Anterior</button>
+            <button class="button button-quiet" id="nextButton" type="button">Próxima ⏭</button>
+            <button class="button button-quiet" id="shuffleButton" type="button" aria-pressed="false">🔀 Aleatório: desligado</button>
+          </div>
+          <div class="playback-status" id="playbackStatus" aria-live="polite">Aguardando uma música…</div>
+
+          <div class="playlist-heading-row">
+            <div><span class="micro-label">FAIXAS DA PLAYLIST</span><span class="playlist-help">O anfitrião escolhe a faixa e a fonte: sem anúncios, mp3 próprio ou YouTube.</span></div>
+            <span id="playlistSourceLabel" class="playlist-source-label">Lista importada</span>
+          </div>
+          <ol class="playlist-list" id="playlistList"></ol>
+        </div>
+      </div>
+      <div class="notice" id="notice" role="status" aria-live="polite" hidden></div>
+    </section>
+
+    <section class="how-it-works">
+      <div class="section-kicker">FEITO PARA OUVIR EM GRUPO</div>
+      <div class="how-grid">
+        <div class="how-item"><span>1</span><div><strong>Crie a sala</strong><p>Um código conecta quem entrar.</p></div></div>
+        <div class="how-item"><span>2</span><div><strong>Importe a playlist</strong><p>O site lê as faixas e procura versões sem anúncios.</p></div></div>
+        <div class="how-item"><span>3</span><div><strong>Ouçam juntos</strong><p>Todo mundo toca a mesma faixa, no mesmo ponto.</p></div></div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>Ouvir Juntos</span><span>Uma sala. Uma playlist. Todo mundo junto.</span>
+      <a href="privacidade.html">Privacidade</a>
+    </footer>
+  </main>
+</body>
+</html>

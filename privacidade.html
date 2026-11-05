@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11101a">
+  <title>Privacidade — Ouvir Juntos</title>
+  <link rel="stylesheet" href="style.css?v=9">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar"><a class="brand" href="./"><span class="brand-mark">♫</span><span>ouvir<span class="brand-light">juntos</span></span></a></header>
+    <section class="panel" style="margin-top:40px">
+      <div class="section-kicker">INFORMAÇÕES</div>
+      <h1 style="font-size:2.2rem;line-height:1.1">Privacidade</h1>
+      <p>Para ler uma playlist, o site envia o link que você colou ao servidor do próprio site, que consulta o Spotify ou o Deezer apenas para obter os nomes das músicas e dos artistas de playlists públicas. Nenhuma conta ou senha é pedida e nada é guardado depois da consulta.</p>
+      <p>Para procurar versões sem anúncios, o seu navegador envia o nome da música e do artista ao Audius (api.audius.co), que também recebe o seu endereço de IP, como em qualquer acesso a um site. As faixas do Audius tocam direto do Audius em cada aparelho.</p>
+      <p>Os arquivos mp3 que o anfitrião adiciona ficam na memória do navegador dele e não são guardados em nenhum servidor do site. Para a sala ouvir, o anfitrião envia os pedaços do arquivo pelo servidor público de mensagens da sala (que apenas repassa, sem gravar); cada pessoa guarda a faixa atual e as próximas só na memória do próprio navegador, e tudo some ao sair da sala ou fechar a página. Envie apenas arquivos que você tem o direito de compartilhar.</p>
+      <p>Se alguém escolher um vídeo do YouTube para uma faixa, a reprodução ocorre no player incorporado oficial do YouTube, que pode aplicar seus próprios cookies, anúncios e políticas.</p>
+      <p>As salas trocam mensagens (código da sala, playlist e estado da reprodução) por um servidor público de mensagens MQTT (EMQX, HiveMQ ou Mosquitto), que pode ver essas mensagens; quem souber o código da sala consegue lê-las. As mensagens da sala são apagadas quando o anfitrião sai. Os pedaços dos mp3 passam pelo mesmo servidor (conexão criptografada, porta 443), que pode ver esse tráfego, mas ele não é armazenado. O anfitrião precisa manter a página aberta. Esta versão não possui conta própria nem banco de dados, e não guarda o histórico das playlists.</p>
+      <p><a href="./">Voltar ao Ouvir Juntos</a></p>
+    </section>
+  </main>
+</body>
+</html>

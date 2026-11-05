@@ -1,0 +1,13 @@
+VERIFICAÇÃO — OUVIR JUNTOS v4 (mp3 pela sala, na RAM)
+
+TESTADO (Chromium automatizado, 3 navegadores, servidor MQTT LOCAL com o mesmo protocolo)
+[OK] Convidado que já estava na sala ouve o mp3 em menos de 1 s depois do play do anfitrião.
+[OK] Próximas faixas chegam adiantadas: a troca de faixa no convidado leva menos de 0,5 s.
+[OK] Convidado que entra com a música tocando recebe o arquivo e entra no ponto certo (diferença < 0,2 s).
+[OK] Arquivo recebido tem exatamente o mesmo tamanho do original (961804 bytes).
+[OK] Com 15% das mensagens de arquivo perdidas pelo servidor, o mp3 chega completo (reenvio dos pedaços que faltam); começou em ~7 s.
+[OK] Nenhuma conexão WebRTC/TURN é usada.
+
+NÃO TESTADO (sem acesso à internet externa neste ambiente)
+[ ] Os servidores públicos reais (EMQX, HiveMQ, Mosquitto): limites de tamanho/velocidade de mensagem. Se algum limitar, ajuste FILE_RATE_KBPS / FILE_CHUNK_BYTES no config.js.
+[ ] iPhone/Safari e redes móveis reais.
